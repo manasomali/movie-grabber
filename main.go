@@ -22,7 +22,6 @@ import (
 
 const URL = "https://topdezfilmes.de"
 
-
 func main() {
 	fmt.Print("Qbitorrent host (default: http://localhost:8080): ")
 	var QBITORRENT_HOST string = "http://localhost:8080"
@@ -39,9 +38,9 @@ func main() {
 	fmt.Scanln(&pagesDesired)
 
 	pageNumber := 1
-	allLinks := make([]string, 0) 
+	allLinks := make([]string, 0)
 	for pageNumber <= pagesDesired {
-		links := getAllMovieLinks(URL+"/page/"+strconv.Itoa(pageNumber),"a")
+		links := getAllMovieLinks(URL+"/page/"+strconv.Itoa(pageNumber), "a")
 		allLinks = append(allLinks, links...)
 		pageNumber++
 	}
@@ -64,10 +63,10 @@ func main() {
 		return
 	}
 
-    filesList, err := unzip("temp/"+movieChoosed+".zip")
-    if err != nil {
-        fmt.Println("Error unzip file: ", err)
-    }
+	filesList, err := unzip("temp/" + movieChoosed + ".zip")
+	if err != nil {
+		fmt.Println("Error unzip file: ", err)
+	}
 	srtFiles := make([]string, 0)
 	torrentFiles := make([]string, 0)
 	for _, file := range filesList {
@@ -82,15 +81,15 @@ func main() {
 	if len(srtFiles) == 0 {
 		fmt.Println("No str file found")
 	} else if len(srtFiles) == 1 {
-		copySrtFile(srtFiles[0],targetDir)
+		copySrtFile(srtFiles[0], targetDir)
 	} else {
-		for n, srtFile  := range srtFiles {
-			fmt.Println(strconv.Itoa(n)+" - "+srtFile)
+		for n, srtFile := range srtFiles {
+			fmt.Println(strconv.Itoa(n) + " - " + srtFile)
 		}
 		var srtDesired int
 		fmt.Print("Choose the str file: ")
 		fmt.Scanln(&srtDesired)
-		copySrtFile(srtFiles[srtDesired],targetDir)
+		copySrtFile(srtFiles[srtDesired], targetDir)
 	}
 	torrentToAdd := ""
 	if len(torrentFiles) == 0 {
@@ -98,8 +97,8 @@ func main() {
 	} else if len(torrentFiles) == 1 {
 		torrentToAdd = torrentFiles[0]
 	} else {
-		for n, torrentFile  := range torrentFiles {
-			fmt.Println(strconv.Itoa(n)+" - "+torrentFile)
+		for n, torrentFile := range torrentFiles {
+			fmt.Println(strconv.Itoa(n) + " - " + torrentFile)
 		}
 		var torrentDesired int
 		fmt.Print("Choose the torrent file: ")
@@ -108,21 +107,20 @@ func main() {
 	}
 
 	sid, err := loginQbt(QBITORRENT_HOST, QBITORRENT_USER, QBITORRENT_PASS)
-    if err != nil {
-        fmt.Print("Error login qbitorrent "+err.Error())
-    }
+	if err != nil {
+		fmt.Print("Error login qbitorrent " + err.Error())
+	}
 	err = addTorrentFromFile(QBITORRENT_HOST, "temp/"+torrentToAdd, sid)
-    if err != nil {
-        fmt.Print("Error adding torrent file "+err.Error())
-    }
+	if err != nil {
+		fmt.Print("Error adding torrent file " + err.Error())
+	}
 	logoutQbt(QBITORRENT_HOST, sid)
 	if err != nil {
-        fmt.Print("Fail to logout qbitorrent "+err.Error())
-    }
+		fmt.Print("Fail to logout qbitorrent " + err.Error())
+	}
 
 	deleteFolder("temp")
 }
-
 
 func chooseDirectory() string {
 	selectedPath, err := zenity.SelectFile(zenity.Filename(``), zenity.Directory())
@@ -151,70 +149,69 @@ func downloadFile(filepath string, url string) error {
 }
 
 func unzip(src string) ([]string, error) {
-	filesList := make([]string,0)
-    r, err := zip.OpenReader(src)
-    if err != nil {
-        return filesList, err
+	filesList := make([]string, 0)
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return filesList, err
 	}
-    defer func() {
-        if err := r.Close(); err != nil {
-            fmt.Println(err)
-        }
-    }()
+	defer func() {
+		if err := r.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	os.MkdirAll("temp", 0755)
-    extractAndWriteFile := func(f *zip.File) error {
-        rc, err := f.Open()
-        if err != nil {
-            return err
-        }
-        defer func() {
-            if err := rc.Close(); err != nil {
-                fmt.Println(err)
-            }
-        }()
-
-        path := filepath.Join("temp", f.Name)
-
-        if !strings.HasPrefix(path, filepath.Clean("temp") + string(os.PathSeparator)) {
-            return fmt.Errorf("illegal file path: %s", path)
-        }
-
-        if f.FileInfo().IsDir() {
-            os.MkdirAll(path, f.Mode())
-        } else {
-            os.MkdirAll(filepath.Dir(path), f.Mode())
-            f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-            if err != nil {
-                return err
-            }
-            defer func() {
-                if err := f.Close(); err != nil {
-                    fmt.Println(err)
-                }
-            }()
-
-            _, err = io.Copy(f, rc)
-            if err != nil {
-                return err
-            }
-        }
-        return nil
-    }
-
-	
-    for _, f := range r.File {
-		filesList = append(filesList, f.Name)
-        err := extractAndWriteFile(f)
+	extractAndWriteFile := func(f *zip.File) error {
+		rc, err := f.Open()
 		if err != nil {
-            return filesList, err
-        }
-    }
-    return filesList, nil
+			return err
+		}
+		defer func() {
+			if err := rc.Close(); err != nil {
+				fmt.Println(err)
+			}
+		}()
+
+		path := filepath.Join("temp", f.Name)
+
+		if !strings.HasPrefix(path, filepath.Clean("temp")+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", path)
+		}
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(path, f.Mode())
+		} else {
+			os.MkdirAll(filepath.Dir(path), f.Mode())
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := f.Close(); err != nil {
+					fmt.Println(err)
+				}
+			}()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, f := range r.File {
+		filesList = append(filesList, f.Name)
+		err := extractAndWriteFile(f)
+		if err != nil {
+			return filesList, err
+		}
+	}
+	return filesList, nil
 }
 
 func loginQbt(baseUrl string, username string, password string) (string, error) {
 	posturl := baseUrl + "/api/v2/"
-	data := "username="+username+"&password="+password
+	data := "username=" + username + "&password=" + password
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", posturl+"auth/login", strings.NewReader(data))
 	if err != nil {
@@ -244,7 +241,6 @@ func loginQbt(baseUrl string, username string, password string) (string, error) 
 		return "", errors.New("SID not found in response cookies")
 	}
 }
-	
 
 func getAllMovieLinks(url string, element string) []string {
 	resp, err := http.Get(url)
@@ -253,7 +249,6 @@ func getAllMovieLinks(url string, element string) []string {
 	}
 	defer resp.Body.Close()
 
-	// Parse the HTML content
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		log.Fatalf("Error parsing HTML: %v", err)
@@ -264,7 +259,7 @@ func getAllMovieLinks(url string, element string) []string {
 		if n.Type == html.ElementNode && n.Data == "a" {
 			for _, attr := range n.Attr {
 				if attr.Key == "href" {
-					links = append(links,attr.Val)
+					links = append(links, attr.Val)
 				}
 			}
 		}
@@ -286,7 +281,6 @@ func filterMovieLinks(links []string) []string {
 	}
 	return filteredLinks
 }
-
 
 func addTorrentFromFile(baseURL string, filePath string, sid string) error {
 	url := baseURL + "/api/v2/torrents/add"
@@ -330,10 +324,8 @@ func addTorrentFromFile(baseURL string, filePath string, sid string) error {
 	return errors.New("Fail")
 }
 
-
-
 func logoutQbt(baseUrl string, sid string) error {
-	posturl := baseUrl+"/api/v2/"
+	posturl := baseUrl + "/api/v2/"
 
 	cookie := &http.Cookie{
 		Name:  "SID",
@@ -348,7 +340,7 @@ func logoutQbt(baseUrl string, sid string) error {
 
 	req, err := http.NewRequest("POST", posturl+"auth/logout", nil)
 	if err != nil {
-        return err
+		return err
 	}
 
 	resp, err := client.Do(req)
@@ -360,13 +352,13 @@ func logoutQbt(baseUrl string, sid string) error {
 	return nil
 }
 func copySrtFile(srtFile string, destinyDir string) {
-	inputFile, err := os.Open("temp/"+srtFile)
+	inputFile, err := os.Open("temp/" + srtFile)
 	if err != nil {
 		fmt.Println("Couldn't open source file", err)
 	}
 	defer inputFile.Close()
 
-	outputFile, err := os.Create(destinyDir+"/"+srtFile)
+	outputFile, err := os.Create(destinyDir + "/" + srtFile)
 	if err != nil {
 		fmt.Println("Couldn't open dest file", err)
 	}
@@ -377,7 +369,6 @@ func copySrtFile(srtFile string, destinyDir string) {
 		fmt.Println("Couldn't copy to dest from source", err)
 	}
 }
-	
 
 func deleteFolder(folderName string) {
 	err := os.RemoveAll(folderName)
