@@ -1,4 +1,4 @@
-module github.comm/manasomali/movie-grabber
+module github.com/manasomali/movie-grabber
 
 go 1.21.1
 

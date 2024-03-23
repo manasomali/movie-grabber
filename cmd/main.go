@@ -9,8 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.comm/manasomali/movie-grabber/internal/helpers"
-	"github.comm/manasomali/movie-grabber/internal/qbt"
+	"github.com/manasomali/movie-grabber/internal/helpers"
+	"github.com/manasomali/movie-grabber/internal/qbt"
 	"golang.org/x/term"
 )
 
